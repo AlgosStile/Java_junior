@@ -3,12 +3,13 @@ package org.example.task2;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 /**
  * Корзина
  * @param <T> Еда
  */
-public class Cart <T extends Food>{
+public class Cart <T extends Food> {
 
     /**
      * Товары в магазине
@@ -17,8 +18,7 @@ public class Cart <T extends Food>{
     private final UMarket market;
     private final Class<T> clazz;
 
-    public Cart(Class<T> clazz, UMarket market)
-    {
+    public Cart(Class<T> clazz, UMarket market) {
         this.clazz = clazz;
         this.market = market;
         foodstuffs = new ArrayList<>();
@@ -31,7 +31,7 @@ public class Cart <T extends Food>{
     /**
      * Распечатать список продуктов в корзине
      */
-    public void printFoodstuffs(){
+    public void printFoodstuffs() {
         AtomicInteger index = new AtomicInteger(1);
         foodstuffs.forEach(food -> {
             System.out.printf("[%d] %s (Белки: %s Жиры: %s Углеводы: %s)\n",
@@ -45,58 +45,37 @@ public class Cart <T extends Food>{
     /**
      * Балансировка корзины
      */
-    public void cardBalancing()
-    {
-        boolean proteins = false;
-        boolean fats = false;
-        boolean carbohydrates = false;
+    public void cardBalancing() {
+//        Predicate<Food> lacksProteins = food -> !food.getProteins();
+//        Predicate<Food> lacksFats = food -> !food.getFats();
+//        Predicate<Food> lacksCarbohydrates = food -> !food.getCarbohydrates();
 
-        for (var food : foodstuffs)
-        {
-            if (!proteins && food.getProteins())
-                proteins = true;
-            else
-            if (!fats && food.getFats())
-                fats = true;
-            else
-            if (!carbohydrates && food.getCarbohydrates())
-                carbohydrates = true;
-            if (proteins && fats && carbohydrates)
-                break;
-        }
+        final boolean[] proteins = {foodstuffs.stream().anyMatch(Food::getProteins)};
+        final boolean[] fats = {foodstuffs.stream().anyMatch(Food::getFats)};
+        final boolean[] carbohydrates = {foodstuffs.stream().anyMatch(Food::getCarbohydrates)};
 
-        if (proteins && fats && carbohydrates)
-        {
+        if (proteins[0] && fats[0] && carbohydrates[0]) {
             System.out.println("Корзина уже сбалансирована по БЖУ.");
             return;
         }
 
-        for (var thing : market.getThings(Food.class))
-        {
-            if (!proteins && thing.getProteins())
-            {
-                proteins = true;
-                foodstuffs.add((T)thing);
-            }
-            else if (!fats && thing.getFats())
-            {
-                fats = true;
-                foodstuffs.add((T)thing);
-            }
-            else if (!carbohydrates && thing.getCarbohydrates())
-            {
-                carbohydrates = true;
-                foodstuffs.add((T)thing);
-            }
-            if (proteins && fats && carbohydrates)
-                break;
-        }
+        market.getThings(clazz).stream()
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
+                .filter(food -> (!proteins[0] && food.getProteins()) ||
+                        (!fats[0] && food.getFats()) ||
+                        (!carbohydrates[0] && food.getCarbohydrates()))
+                .limit(3) // только 3, т.к.у нас всего 3 (Б/Ж/У)
+                .forEach(food -> {
+                    if (!proteins[0] && food.getProteins()) proteins[0] = true;
+                    if (!fats[0] && food.getFats()) fats[0] = true;
+                    if (!carbohydrates[0] && food.getCarbohydrates()) carbohydrates[0] = true;
+                    foodstuffs.add(food);
+                });
 
-        if (proteins && fats && carbohydrates)
-            System.out.println("Корзина сбалансирована по БЖУ.");
-        else
-            System.out.println("Невозможно сбалансировать корзину по БЖУ.");
-
+        String balanceMessage = (proteins[0] && fats[0] && carbohydrates[0]) ?
+                "Корзина сбалансирована по БЖУ." :
+                "Невозможно сбалансировать корзину по БЖУ.";
+        System.out.println(balanceMessage);
     }
-
 }
