@@ -46,9 +46,6 @@ public class Cart <T extends Food> {
      * Балансировка корзины
      */
     public void cardBalancing() {
-//        Predicate<Food> lacksProteins = food -> !food.getProteins();
-//        Predicate<Food> lacksFats = food -> !food.getFats();
-//        Predicate<Food> lacksCarbohydrates = food -> !food.getCarbohydrates();
 
         final boolean[] proteins = {foodstuffs.stream().anyMatch(Food::getProteins)};
         final boolean[] fats = {foodstuffs.stream().anyMatch(Food::getFats)};
