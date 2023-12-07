@@ -15,11 +15,7 @@ class Student implements Serializable {
 
     @Override
     public String toString() {
-        return "Student{" +
-                "name='" + name + '\'' +
-                ", age=" + age +
-                ", GPA=" + GPA +
-                '}';
+        return "Student{" + "name='" + name + '\'' + ", age=" + age + ", GPA=" + GPA + '}';
     }
 
     public String getName() {
